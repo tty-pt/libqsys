@@ -21,3 +21,4 @@ qsyslog_set(qsyslog_t logger)
 {
 	qsyslog = logger;
 }
+

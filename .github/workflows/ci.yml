@@ -1,4 +1,4 @@
-name: CI
+name: ci
 
 on:
   push:
@@ -7,43 +7,16 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-    steps:
-      - uses: tty-pt/.github/package@main
-        with:
-          name: qsys
-
-  release:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      # Download all build artifacts (Linux, macOS, Windows)
-      - uses: actions/download-artifact@v4
-        with:
-          path: dist
-
-      - uses: tty-pt/.github/release@main
-        with:
-          files: dist/**/*
-
-  publish:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      # Only need Linux debs for apt repo
-      - uses: actions/download-artifact@v4
-        with:
-          name: qsys-Linux
-          path: dist
-
-      - uses: tty-pt/.github/publish@main
-        with:
-          source: dist/*.deb
-          host: ${{ secrets.OPENBSD_HOST }}
-          user: ${{ secrets.OPENBSD_USER }}
-          ssh_key: ${{ secrets.OPENBSD_SSH_KEY }}
-          gpg_key: ${{ secrets.OPENBSD_GPG_PRIVATE_KEY }}
-          gpg_pass: ${{ secrets.OPENBSD_GPG_PASSPHRASE }}
+    uses: tty-pt/ci/.github/workflows/all-in-one.yml@msys
+    with:
+      name: libqsys
+    secrets:
+      HOST: ${{ secrets.OPENBSD_HOST }}
+      USER: ${{ secrets.OPENBSD_USER }}
+      SSH_KEY: ${{ secrets.OPENBSD_SSH_KEY }}
+      GPG_PRIVATE_KEY: ${{ secrets.OPENBSD_GPG_PRIVATE_KEY }}
+      GPG_PASSPHRASE: ${{ secrets.OPENBSD_GPG_PASSPHRASE }}
+      GPG_KEYID: ${{ secrets.OPENBSD_GPG_KEY_ID }}
+      ABUILD_PRIVATE_KEY: ${{ secrets.ABUILD_PRIVATE_KEY }}
+      ABUILD_PUBLIC_KEY: ${{ secrets.ABUILD_PUBLIC_KEY }}
+      TAP_TOKEN: ${{ secrets.TAP_TOKEN }}

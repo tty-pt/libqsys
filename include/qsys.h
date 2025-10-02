@@ -2,6 +2,7 @@
 #define QSYS_H
 
 #include <syslog.h>
+#include <stddef.h>
 
 #define UNUSED __attribute__((unused))
 

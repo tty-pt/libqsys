@@ -10,6 +10,7 @@ jobs:
     uses: tty-pt/ci/.github/workflows/all-in-one.yml@msys
     with:
       name: libqsys
+      deps_msys: "mingw-w64-x86_64-libbsd"
     secrets:
       HOST: ${{ secrets.OPENBSD_HOST }}
       USER: ${{ secrets.OPENBSD_USER }}

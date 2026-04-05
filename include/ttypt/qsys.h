@@ -7,6 +7,12 @@ extern "C" {
 
 #include <stddef.h>
 
+#ifdef __APPLE__
+#define WEAK __attribute__((weak_import))
+#else
+#define WEAK __attribute__((weak))
+#endif
+
 #define UNUSED __attribute__((unused))
 
 #define LOG(TYPE, ...) { \

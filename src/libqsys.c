@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include "./../include/ttypt/qsys.h"
 
 #include <stdio.h>
@@ -66,9 +67,50 @@ void qsys_closelog(void) {
     }
 }
 
+/* qsys_dlopen/dlsym/dlclose/dlerror — Windows */
+
+void *
+qsys_dlopen(const char *path, int flags UNUSED)
+{
+    return (void *) LoadLibraryA(path);
+}
+
+void *
+qsys_dlsym(void *handle, const char *symbol)
+{
+    void *sym = NULL;
+    FARPROC fp = GetProcAddress((HMODULE) handle, symbol);
+    memcpy(&sym, &fp, sizeof(sym));
+    return sym;
+}
+
+int
+qsys_dlclose(void *handle)
+{
+    return !FreeLibrary((HMODULE) handle);
+}
+
+static char dlerror_buf[256];
+
+const char *
+qsys_dlerror(void)
+{
+    DWORD err_code = GetLastError();
+    if (err_code == 0)
+        return NULL;
+    memset(dlerror_buf, 0, sizeof(dlerror_buf));
+    FormatMessageA(
+        FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        NULL, err_code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        dlerror_buf, sizeof(dlerror_buf), NULL);
+    return dlerror_buf;
+}
+
 #else /* POSIX ---------------------------------------------------------------- */
 
 #include <syslog.h>
+#include <dlfcn.h>
+#include <string.h>
 
 void qsys_openlog(const char *ident) {
     openlog(ident, LOG_PID | LOG_CONS, LOG_USER);
@@ -83,6 +125,35 @@ void qsys_syslog(int priority, const char *fmt, ...) {
 
 void qsys_closelog(void) {
     closelog();
+}
+
+/* qsys_dlopen/dlsym/dlclose/dlerror — POSIX */
+
+void *
+qsys_dlopen(const char *path, int flags)
+{
+    int posix_flags = RTLD_NOW | RTLD_LOCAL;
+    if (flags & QSYS_RTLD_NODELETE)
+        posix_flags |= RTLD_NODELETE;
+    return dlopen(path, posix_flags);
+}
+
+void *
+qsys_dlsym(void *handle, const char *symbol)
+{
+    return dlsym(handle, symbol);
+}
+
+int
+qsys_dlclose(void *handle)
+{
+    return dlclose(handle);
+}
+
+const char *
+qsys_dlerror(void)
+{
+    return dlerror();
 }
 
 #endif /* _WIN32 */

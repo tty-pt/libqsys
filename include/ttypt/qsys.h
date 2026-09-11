@@ -46,6 +46,24 @@ void qsys_openlog(const char *ident);
 void qsys_syslog(int priority, const char *fmt, ...);
 void qsys_closelog(void);
 
+/* Portable dynamic-library loading. Thin POSIX dlopen/dlsym/dlclose/dlerror
+ * wrappers on Unix; LoadLibraryA/GetProcAddress/FreeLibrary/GetLastError+
+ * FormatMessageA on Windows. No suffix-appending or path canonicalization —
+ * callers pass the exact path.
+ *
+ * qsys_dlopen always resolves eagerly + locally (POSIX RTLD_NOW|RTLD_LOCAL;
+ * no equivalent distinction on Windows). `flags` is a bitmask of the
+ * QSYS_RTLD_* constants below, layered on top of that default; ignored on
+ * Windows (LoadLibraryA has no matching concept, so passing QSYS_RTLD_NODELETE
+ * there is a silent no-op — same as the historical behavior of code that used
+ * to macro dlopen()'s flags arg away entirely on Windows). */
+#define QSYS_RTLD_NODELETE 0x01   /* POSIX RTLD_NODELETE; no-op on Windows */
+
+void       *qsys_dlopen(const char *path, int flags);   /* NULL + qsys_dlerror() on failure */
+void       *qsys_dlsym(void *handle, const char *symbol);   /* NULL if absent */
+int         qsys_dlclose(void *handle);      /* 0 ok, mirrors dlclose's convention */
+const char *qsys_dlerror(void);              /* last error string, or NULL */
+
 #ifdef __cplusplus
 }
 #endif

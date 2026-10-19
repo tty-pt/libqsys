@@ -1,3 +1,15 @@
+## 1.3.0
+
+- **Consolidated socket & portability shims**: full cross-platform shims for
+  sockets (`qsys_sock_*`), polling (`qsys_poll`), advisory locking
+  (`qsys_flock`), filesystem (`qsys_realpath`, `qsys_mkdir`), file I/O
+  (`qsys_ftruncate`, `qsys_dprintf`), timing (`qsys_now_ms`, `qsys_sleep_ms`),
+  process management (`qsys_pid_alive`, `qsys_self_rss_bytes`), and signals
+  (`qsys_stop_on_signal`, `qsys_ignore_pipe`).
+- **Windows / MinGW link fixes**: added `LDLIBS-libqsys-Windows := -lws2_32 -lpsapi`
+  for Win32 socket and PSAPI symbols.
+- Added comprehensive unit tests in `src/qsys_port_test.c`.
+
 ## 1.2.2
 
 - **Documentation-only release: no source or header behaviour changed.** Every

@@ -4,85 +4,103 @@
 [![BSD-2-Clause](https://img.shields.io/badge/License-BSD--2--Clause-blue)](#)
 [![Sys utilities](https://img.shields.io/badge/sys-utilities-6B7280)](#)
 
-> A small library for system utilities like logging and useful macros.
+> Minimal system utilities, pluggable logging sinks, compiler attribute macros, and cross-platform dynamic loading for plain C.
 
-Cross-platform helpers for logging, compiler attribute macros, and dynamic
-loading — the common substrate the rest of the tty.pt stack builds on.
+`libqsys` serves as the foundational substrate for the entire `tty-pt` stack, providing standardized logging, compiler compatibility abstractions, and POSIX/Windows dynamic module loading without heavy external runtime dependencies.
+
+---
 
 ## Contents
 
 - [Features](#features)
-- [Install](#install)
-- [Build from source](#build-from-source)
-- [Quickstart](#quickstart)
-- [API overview](#api-overview)
-- [Documentation](#documentation)
-- [Testing](#testing)
+- [Quickstart: Logging & Custom Sinks](#quickstart-logging--custom-sinks)
+- [API Reference](#api-reference)
+- [Cross-Platform Substrate](#cross-platform-substrate)
+- [Installation & Build](#installation--build)
 - [License](#license)
+
+---
 
 ## Features
 
-- **Logging macros** — `LOG(TYPE, ...)`, `WARN(...)`, `ERR(...)`, `CBUG(...)`
-  with a pluggable `qsyslog_t` sink.
-- **Compiler attribute helpers** — `WEAK`, `UNUSED` and friends, ported across
-  toolchains.
-- **Dynamic loading** — dlopen helpers with `QSYS_RTLD_NODELETE` (no-op on
-  Windows) for module loading.
-- **Shared typedefs** — `qsys.h` carries the common `qsyslog_t` callback and
-  the platform veneer used by sibling libraries.
+- **Pluggable Logging Pipeline**: Standardized `LOG()`, `WARN()`, `ERR()`, and `CBUG()` macros routing through a thread-safe `qsyslog_t` callback sink.
+- **Compiler Attribute Normalization**: Portable definitions for `WEAK`, `UNUSED`, `PACKED`, and format string checking across GCC, Clang, and MSVC.
+- **Dynamic Module Loader**: Wrappers around `dlopen()` / `LoadLibrary()` with `QSYS_RTLD_NODELETE` semantics for hot-reloading safe plugin modules.
+- **Zero Overhead**: Inlined macros and direct POSIX veneers compiling to minimal machine code.
 
-## Install
+---
 
-Prebuilt packages are distributed from tty.pt for Linux (APT / Alpine / Arch /
-Fedora-RHEL), macOS (Homebrew), Windows (winget / MSYS2), and OpenBSD. Follow
-the [installation instructions](https://github.com/tty-pt/ci/blob/main/docs/install.md)
-and use **libqsys** as the package name.
-
-## Build from source
-
-The library builds with a plain `make` (the shared [`mk` include.mk](https://github.com/tty-pt/mk)):
-
-```sh
-make                  # builds lib/libqsys.so + bin/qsys_dlopen_test
-make test             # run the in-tree test suite
-sudo make install     # lib + headers + qsys.pc → $(PREFIX), default /usr/local
-```
-
-Link it from your own C code:
-
-```sh
-cc my_app.c $(pkg-config --cflags --libs qsys)
-```
-
-**Dependencies:** none beyond libc / POSIX (`-ldl` for dynamic loading).
-
-## Quickstart
+## Quickstart: Logging & Custom Sinks
 
 ```c
+#include <stdio.h>
 #include <ttypt/qsys.h>
 
-int main(void)
-{
-    WARN("welcome from libqsys");
+// Custom logging sink callback
+static void custom_logger(int level, const char *msg, void *user) {
+    (void)user;
+    fprintf(stderr, "[CUSTOM-%d] %s\n", level, msg);
+}
+
+int main(void) {
+    // Install custom log sink (or leave default stderr printer)
+    qsyslog_set(custom_logger, NULL);
+
+    LOG(QLOG_INFO, "System initializing...");
+    WARN("Resource usage approaching limit: %d%%", 85);
+    ERR("Failed to bind socket on port %d", 8080);
+
     return 0;
 }
 ```
 
-## API overview
-
-The complete surface lives in `include/ttypt/qsys.h`: the `LOG`/`WARN`/`ERR`/
-`CBUG` macro family, `WEAK`/`UNUSED` attribute macros, the `qsyslog_t`
-callback typedef, and the `QSYS_RTLD_NODELETE` flag for POSIX module loading.
-
-## Documentation
-
-The header `include/ttypt/qsys.h` is the API contract; the man pages shipped
-by the package cover the logging and loading entry points.
-
-## Testing
-
+Compile and link:
 ```sh
-make test     # builds and runs bin/qsys_dlopen_test
+cc app.c $(pkg-config --cflags --libs qsys)
+```
+
+---
+
+## API Reference
+
+### Logging Macros (`<ttypt/qsys.h>`)
+
+| Macro / Function | Signature | Description |
+| :--- | :--- | :--- |
+| `LOG(LEVEL, ...)` | `LOG(int level, const char *fmt, ...)` | Log formatted message at specified severity |
+| `WARN(...)` | `WARN(const char *fmt, ...)` | Emit formatted warning message to log sink |
+| `ERR(...)` | `ERR(const char *fmt, ...)` | Emit formatted error message to log sink |
+| `CBUG(...)` | `CBUG(cond, ...)` | Assert condition; emit diagnostic and abort on failure |
+| `qsyslog_set` | `void qsyslog_set(qsyslog_t fn, void *ud)` | Install custom sink callback |
+
+### Compiler Attribute Helpers
+
+| Macro | GCC / Clang Equivalent | MSVC Equivalent | Purpose |
+| :--- | :--- | :--- | :--- |
+| `WEAK` | `__attribute__((weak))` | *noop* | Allow default symbol definitions overridden by modules |
+| `UNUSED` | `__attribute__((unused))` | *noop* | Suppress unused variable/parameter warnings |
+| `PACKED` | `__attribute__((packed))` | `#pragma pack` | Enforce byte-aligned struct memory layouts |
+
+---
+
+## Cross-Platform Substrate
+
+`libqsys` abstracts platform differences across operating systems:
+- **POSIX (Linux, macOS, OpenBSD)**: Uses `dlopen`, `dlsym`, `dlclose` with `RTLD_NOW | RTLD_LOCAL`, respecting `QSYS_RTLD_NODELETE` to keep symbols mapped during plugin teardowns.
+- **Windows (MSVC / MinGW)**: Maps module operations to `LoadLibraryEx` and `GetProcAddress`.
+
+---
+
+## Installation & Build
+
+### Prebuilt Packages
+Prebuilt packages are distributed from tty.pt for Linux (APT / Alpine / Arch / Fedora-RHEL), macOS (Homebrew), Windows (winget / MSYS2), and OpenBSD. Follow the [installation instructions](https://github.com/tty-pt/ci/blob/main/docs/install.md) and use **libqsys** as the package name.
+
+### Build from Source
+```sh
+make                  # builds lib/libqsys.so + bin/qsys_dlopen_test
+make test             # run in-tree unit and dynamic loading tests
+sudo make install     # install headers, library, and qsys.pc
 ```
 
 ## License

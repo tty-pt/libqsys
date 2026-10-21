@@ -1,4 +1,8 @@
-# libqsys
+<p align="center">
+  <img src="logo.png" alt="libstele logo" width="220" />
+</p>
+
+# libstele
 
 [![C99](https://img.shields.io/badge/C-C99-555?logo=c)](#)
 [![BSD-2-Clause](https://img.shields.io/badge/License-BSD--2--Clause-blue)](#)
@@ -7,13 +11,15 @@
 
 > Zero-dependency system substrate for plain C: cross-platform sockets, event polling, pluggable logging, process diagnostics, monotonic timing, advisory file locking, dynamic module loading, and POSIX shims.
 
-`libqsys` serves as the foundational system layer for the `tty-pt` ecosystem (including [axil](https://github.com/tty-pt/axil), [libcorm](https://github.com/tty-pt/libcorm), and [liblamina](https://github.com/tty-pt/liblamina)). It normalizes disparate POSIX, BSD, and Windows interfaces into a lean, predictable C99 API without pulling in heavy external runtimes like GLib, APR, or libuv.
+**libstele** (formerly `libqsys`) serves as the foundational system layer for the `tty-pt` ecosystem (including [axil](https://github.com/tty-pt/axil), [libcorm](https://github.com/tty-pt/libcorm), and [liblamina](https://github.com/tty-pt/liblamina)). It normalizes disparate POSIX, BSD, and Windows interfaces into a lean, predictable C99 API without pulling in heavy external runtimes like GLib, APR, or libuv.
+
+> **Note on Naming & API Stability**: The project is transitioning to the name **libstele**. To ensure uninterrupted backward compatibility across the ecosystem, the public C API, headers (`<ttypt/qsys.h>`), symbols (`qsys_*`), shared library names (`libqsys.so`), and package identifiers (`qsys`) currently retain the `qsys` naming convention.
 
 ---
 
 ## Contents
 
-- [Why libqsys? (The 30-Second Elevator Pitch)](#why-libqsys-the-30-second-elevator-pitch)
+- [Why libstele? (The 30-Second Elevator Pitch)](#why-libstele-the-30-second-elevator-pitch)
 - [The Six Core Jobs It Does](#the-six-core-jobs-it-does)
 - [Architecture & Platform Mapping](#architecture--platform-mapping)
 - [Quickstart Examples](#quickstart-examples)
@@ -35,14 +41,14 @@
 
 ---
 
-## Why libqsys? (The 30-Second Elevator Pitch)
+## Why libstele? (The 30-Second Elevator Pitch)
 
 Building cross-platform micro-daemons, games, and high-performance servers in plain C usually forces an unpleasant compromise:
 
 1. **Pull in bloated runtimes** like GLib or APR that introduce megabytes of dependencies, complicated type systems, and custom event loops.
 2. **Scatter hundreds of `#ifdef _WIN32` blocks** throughout your networking, timing, file I/O, and process management code.
 
-`libqsys` provides a clean third path: **a zero-dependency, header-and-shared-library micro-substrate**. You write clean, standard C against `<ttypt/qsys.h>`, and `libqsys` transparently bridges POSIX and Win32 under the hood—mapping everything from Winsock initialisation and non-blocking flags to monotonic time, RSS measurement, and advisory file locks (`flock`).
+`libstele` provides a clean third path: **a zero-dependency, header-and-shared-library micro-substrate**. You write clean, standard C against `<ttypt/qsys.h>`, and the runtime transparently bridges POSIX and Win32 under the hood—mapping everything from Winsock initialisation and non-blocking flags to monotonic time, RSS measurement, and advisory file locks (`flock`).
 
 ---
 
@@ -66,7 +72,7 @@ Building cross-platform micro-daemons, games, and high-performance servers in pl
                                       |
                                       v
   +-----------------------------------------------------------------------+
-  |                               libqsys                                 |
+  |                          libstele (libqsys)                           |
   |  +--------------------+  +--------------------+  +-----------------+  |
   |  |  Logging & Assert  |  |  Sockets & Polling |  | Process & Time  |  |
   |  |  LOG/WARN/ERR/CBUG |  |  qsys_sock_* / poll|  | now_ms/rss/alive|  |

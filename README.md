@@ -60,6 +60,7 @@ Building cross-platform micro-daemons, games, and high-performance servers in pl
 4. **Dynamic Module Loading & Safe Hot-Reloading**: Seamless dynamic library abstraction (`qsys_dlopen`, `qsys_dlsym`, `qsys_dlclose`, `qsys_dlerror`) featuring `QSYS_RTLD_NODELETE` semantics to keep symbol tables intact during plugin teardowns.
 5. **POSIX Filesystem, Locking & Safe File I/O**: Cross-platform advisory file locking (`qsys_flock` with `QSYS_LOCK_SH/EX/NB/UN`), directory creation (`qsys_mkdir`), formatted descriptor printing (`qsys_dprintf`), descriptor truncation (`qsys_ftruncate`), temp files (`qsys_mkstemps`), and path canonicalization (`qsys_realpath`).
 6. **Signal Handling & Environment Control**: Clean process termination traps (`qsys_stop_on_signal`), broken-pipe signal suppression (`qsys_ignore_pipe` to prevent socket disconnect crashes), and cross-platform environment setters (`qsys_setenv`, `qsys_unsetenv`).
+7. **Universal Isomorphic C Contract (`<ttypt/iso.h>`)**: Platform-agnostic `ISO_EXPORT`, `ISO_EXPORT_AS`, and `ISO_IMPORT` macros for writing C modules that compile symmetrically into native `.so` shared libraries and WebAssembly `.wasm` browser reactors without preprocessor branching.
 
 ---
 

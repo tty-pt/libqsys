@@ -1,9 +1,5 @@
 ## [1.4.0]
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/tty-pt/libqsys/main/logo.png" alt="libqsys logo" width="220" />
-</p>
-
 - **Universal Isomorphic C Contract (`<ttypt/iso.h>`)**:
   - Introduced `<ttypt/iso.h>` providing platform-independent `ISO_EXPORT`, `ISO_EXPORT_AS`, and `ISO_IMPORT` macros.
   - Symmetrical compilation across native shared libraries (`.so` / `.dylib`) with default symbol visibility and WebAssembly reactor bundles (`.wasm`) with direct `export_name` attributes.
